@@ -2,16 +2,19 @@ import puppeteer from 'puppeteer';
 
 (async () => {
   // Launch the browser and open a new blank page
-  const browser = await puppeteer.launch({headless: false, slowMo: 350});
+  const browser = await puppeteer.launch({headless: false, slowMo: 250});
   const page = await browser.newPage();
   // Set screen size
   await page.setViewport({width: 1780, height: 1224});
+  const val =0;
 
   const downloadCSVForPage = async (pageId) => {
-    await page.goto(`https://app.pendo.io/s/5640672618741760/pages/${pageId}`, {
+    await page.goto(`https://app.pendo.io/s/5640672618741760/features/${pageId}`, {
         waitUntil: "domcontentloaded",
     });
-    await page.waitForSelector('text/View All Accounts');
+    try {
+     await page.waitForXPath("//a[contains(., 'View All Accounts')]");
+ 
     const elements = await page.$$("tfoot a");
     await elements[1].click();
     //await page.waitForNavigation();
@@ -56,13 +59,21 @@ import puppeteer from 'puppeteer';
           await productVersionoption[1].click();
 
             // add time SpendOnApp
-            const addColumnBtn5 = await page.waitForXPath("//a[contains(., 'Add Columns')]");
+           /* const addColumnBtn5 = await page.waitForXPath("//a[contains(., 'Add Columns')]");
             await addColumnBtn5.click();
             const selectEl5 = await page.waitForSelector(".select2-container.ng-empty");
             await selectEl5.click();
             const timeSpentOnApp = await page.$x("//li[contains(., 'Time on App')]");
-            await timeSpentOnApp[1].click();
+            await timeSpentOnApp[1].click();*/
 
+
+             // add time SpendOnApp
+             const addColumnBtn6 = await page.waitForXPath("//a[contains(., 'Add Columns')]");
+             await addColumnBtn6.click();
+             const selectEl5 = await page.waitForSelector(".select2-container.ng-empty");
+             await selectEl5.click();
+             const timeSpentOnApp = await page.$x("//li[contains(., 'Usage Trending')]");
+             await timeSpentOnApp[1].click();
 //add visitor
      const addColumnBtn1 = await page.waitForXPath("//a[contains(., 'Add Columns')]");
      await addColumnBtn1.click();
@@ -81,35 +92,54 @@ import puppeteer from 'puppeteer';
     const exportBtn = await page.waitForSelector(`button.csv-download`);
     await exportBtn.click();
     await page.waitForTimeout(2000);
+    await page.goto('https://app.pendo.io/s/5640672618741760/features', {
+      waitUntil: "domcontentloaded",
+    });
+
+    const closeBtn = await page.waitForXPath("//button[contains(., 'Close')]");
+    await closeBtn.click();
+    const backtoPageBtn =  await page.waitForXPath("//a[contains(., 'Back to Page Detail')]")
+  await backtoPageBtn.click();
+  const backtoPages =  await page.waitForXPath("//a[contains(., 'Back to Pages')]")
+  await backtoPages.click();
+    }catch{
+      await page.goto('https://app.pendo.io/s/5640672618741760/features', {
+        waitUntil: "domcontentloaded",
+      });
+    }
    /* const closeBtn = await page.waitForXPath("//button[contains(., 'Close')]");
     await closeBtn.click();
     const backtoPageBtn =  await page.waitForXPath("//a[contains(., 'Back to Page Detail')]")
   await backtoPageBtn.click();
   const backtoPages =  await page.waitForXPath("//a[contains(., 'Back to Pages')]")
   await backtoPages.click();*/
-  await page.goto('https://app.pendo.io/s/5640672618741760/pages', {
-    waitUntil: "domcontentloaded",
-  });
+
+ 
 
   };
 
   let pageListFetched = false;
   page.on('response', async response => {
-    if (response.url().includes("api/s/5640672618741760/page?expand=") && !pageListFetched) {
+    if (response.url().includes("api/s/5640672618741760/feature?expand=") && !pageListFetched) {
         const jsonResponse = await response.json();
         const pageIds = jsonResponse.filter(({appId}) => (appId === 5725580939100160)).map(({id}) => id);
-       // pageListFetched = true;
+        pageListFetched = true;
 
-        pageIds.forEach(async(id) => {
-          await downloadCSVForPage(id);
-        });
+       for(let i=0; i<pageIds.length; i++) {
+         
+
+            console.log('id', pageIds[i]);
+            await downloadCSVForPage(pageIds[i]);
+     
+      
+        }
       
        // await browser.close();
     }
   });
 
   // Navigate the page to a URL
-  await page.goto('https://app.pendo.io/s/5640672618741760/pages', {
+  await page.goto('https://app.pendo.io/s/5640672618741760/features', {
     waitUntil: "domcontentloaded",
   });
   await page.waitForTimeout(9000);

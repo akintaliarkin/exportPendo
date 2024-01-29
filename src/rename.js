@@ -1,6 +1,20 @@
 import fs from "fs";
-const textSource = fs.readFileSync("/Users/uchikkegowda/Downloads/accountList-csv-rId-cb0399f6-ad85-4ef5-a78f-9a0b2e3ea87a.csv", "utf8");
-console.log(textSource.split(',')[1].replace('Page Views for ',"").replace(' (Operations for Networks - web)',""));
+const dirPath ="/Users/uchikkegowda/Downloads/vrni-cloud-trial-customers-script/";
+
+fs.readdir(dirPath, function (err, files) {
+    if (err) {
+      console.error("Could not list the directory.", err);
+      process.exit(1);
+    }
+    files.forEach(function (file, index) {
+        console.log('file',file)
+        const textSource = fs.readFileSync(dirPath+file, "utf8");
+        console.log(textSource.split(',')[1].replace('Page Views for ',"").replace(' (Operations for Networks - web)',""));
+
 const fileName =  textSource.split(',')[1].replace('Page Views for ',"").replace(' (Operations for Networks - web)',"");
-fs.rename("/Users/uchikkegowda/Downloads/accountList-csv-rId-cb0399f6-ad85-4ef5-a78f-9a0b2e3ea87a.csv", `/Users/uchikkegowda/Downloads/accountList-new-${fileName}.csv`, function(err) {
+console.log("filename",fileName );
+fs.rename(dirPath+file, `/Users/uchikkegowda/Downloads/vrni-cloud-trial-customers-script/accountList-${fileName}.csv`, function(err) {
     if ( err ) console.log('ERROR: ' + err)});
+    });
+});
+
