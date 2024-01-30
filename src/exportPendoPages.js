@@ -1,4 +1,5 @@
 import puppeteer from 'puppeteer';
+import fs from "fs";
 
 (async () => {
   // Launch the browser and open a new blank page
@@ -39,7 +40,7 @@ import puppeteer from 'puppeteer';
         const selectEl2 = await page.waitForSelector(".select2-container.ng-empty");
         await selectEl2.click();
         const nameoption = await page.$x("//li[contains(., 'name')]");
-        await nameoption[1].click();
+        await nameoption[3].click();
 
 
         // add orgname
@@ -119,6 +120,8 @@ import puppeteer from 'puppeteer';
   };
 
   let pageListFetched = false;
+  const textSource = fs.readFileSync("src/doneFeatures.txt", "utf8");
+  const donePageIds = textSource?.split("\n") || [];
   page.on('response', async response => {
     if (response.url().includes("api/s/5640672618741760/feature?expand=") && !pageListFetched) {
         const jsonResponse = await response.json();
@@ -126,12 +129,10 @@ import puppeteer from 'puppeteer';
         pageListFetched = true;
 
        for(let i=0; i<pageIds.length; i++) {
-         
-
-            console.log('id', pageIds[i]);
+          if (!donePageIds.includes(pageIds[i])) {
             await downloadCSVForPage(pageIds[i]);
-     
-      
+            console.log(pageIds[i])
+          }
         }
       
        // await browser.close();
